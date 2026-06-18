@@ -82,11 +82,15 @@ Priority: kubeProxyEnabled (old) > kubeProxy.enabled (new) > "true" (default)
 
 {{/*
 Resolve the target namespace.
-If the user provided --namespace on helm install (i.e. Release.Namespace is not "default"),
-use that. Otherwise fall back to .Values.namespace (default "vn2") for backward compatibility.
+If both --namespace was provided on helm install (i.e. Release.Namespace is not "default")
+and .Values.namespace is set, .Values.namespace takes priority.
+If only --namespace was provided, use that.
+Otherwise fall back to .Values.namespace (default "vn2") for backward compatibility.
 */}}
 {{- define "virtualnode2.namespace" -}}
-{{- if eq .Release.Namespace "default" -}}
+{{- if and (ne .Release.Namespace "default") .Values.namespace -}}
+{{- .Values.namespace -}}
+{{- else if eq .Release.Namespace "default" -}}
 {{- .Values.namespace | default "vn2" -}}
 {{- else -}}
 {{- .Release.Namespace -}}
